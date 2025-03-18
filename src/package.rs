@@ -108,6 +108,46 @@ impl ADB {
         };
 
         for line in output.lines() {
+            if line.contains("pkg=") {
+                info.name = line.split("=").nth(1)?
+                    .trim_matches('"')
+                    .to_string();
+            } else if line.contains("versionCode=") {
+                info.version_code = line.split("=").nth(1)?
+                    .trim_matches('"')
+                    .to_string();
+            } else if line.contains("versionName=") {
+                info.version_name = line.split("=").nth(1)?
+                    .trim_matches('"')
+                    .to_string();
+            } else if line.contains("system app") {
+                info.is_system = true;
+            } else if line.contains("firstInstallTime=") {
+                info.install_time = Some(line.split("=").nth(1)?
+                    .trim_matches('"')
+                    .to_string());
+            } else if line.contains("lastUpdateTime=") {
+                info.update_time = Some(line.split("=").nth(1)?
+                    .trim_matches('"')
+                    .to_string());
+            }
+        }
+
+        if info.name.is_empty() {
+            None
+        } else {
+            Some(info)
+        }
+            name: String::new(),
+            version_code: String::new(),
+            version_name: String::new(),
+            is_system: false,
+            install_time: None,
+            update_time: None,
+            size: None,
+        };
+
+        for line in output.lines() {
             let line = line.trim();
             if line.starts_with("Package [") {
                 info.name = line.split('[').nth(1)?.split(']').next()?.to_string();
