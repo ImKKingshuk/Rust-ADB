@@ -3,35 +3,53 @@
 use rust_adb::ADB;
 use std::time::Duration;
 
+use rust_adb::ADB;
+use std::time::Duration;
+use log::LevelFilter;
+
 #[tokio::main]
-async fn main() {
-    let adb = ADB::new("/path/to/adb", Duration::from_secs(10));
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize logging
+    env_logger::Builder::new()
+        .filter_level(LevelFilter::Debug)
+        .init();
 
-    match adb.refresh_device_list_async().await {
-        Ok(devices) => {
-            println!("Connected devices:");
-            for device in devices {
-                println!("{}", device);
-            }
+    // Initialize ADB with a 30-second timeout
+    let adb = ADB::new(".", Duration::from_secs(30));
+
+    // Start ADB server
+    adb.start_server()?;
+
+    // List connected devices
+    let devices = adb.refresh_device_list()?;
+    println!("Connected devices:");
+    for device in devices {
+        println!("Serial: {}, State: {}", device.serial, device.state);
+        if let Some(model) = device.model {
+            println!("Model: {}", model);
         }
-        Err(err) => eprintln!("Error: {}", err),
     }
 
-    match adb.get_screenshot_png_async("device_id_or_serial").await {
-        Ok(screenshot) => {
-            println!("Screenshot received: {} bytes", screenshot.len());
+    // Example: Get package list from first device (if available)
+    if let Some(first_device) = devices.first() {
+        println!("\nPackages on device {}:", first_device.serial);
+        let packages = adb.get_package_list(&first_device.serial)?;
+        for package in packages {
+            println!("Package: {}", package.name);
         }
-        Err(err) => eprintln!("Error getting screenshot: {}", err),
+
+        // Example: Get device properties
+        println!("\nDevice properties:");
+        let props = adb.get_device_props(&first_device.serial)?;
+        println!("{}", props);
+
+        // Example: Enable wireless debugging
+        if let Ok((ip, port)) = adb.enable_wireless_debugging(&first_device.serial) {
+            println!("\nWireless debugging enabled at {}:{}", ip, port);
+            // Connect wirelessly
+            adb.connect_wireless(&ip, port)?;
+        }
     }
 
-    // Example usage of install_app and logcat
-    match adb.install_app_async("device_id_or_serial", "/path/to/app.apk").await {
-        Ok(result) => println!("App installed: {}", result),
-        Err(err) => eprintln!("Error installing app: {}", err),
-    }
-
-    match adb.logcat_async("device_id_or_serial").await {
-        Ok(logs) => println!("Logcat output: {}", logs),
-        Err(err) => eprintln!("Error getting logcat output: {}", err),
-    }
+    Ok(())
 }
