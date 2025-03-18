@@ -502,6 +502,9 @@ impl ADB {
             version_code: String::new(),
             version_name: String::new(),
             is_system: false,
+            install_time: todo!(),
+            update_time: todo!(),
+            size: todo!(),
         })
     }
 
