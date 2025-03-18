@@ -3,11 +3,19 @@ use crate::ADB;
 
 impl ADB {
     pub fn connect_wireless(&self, ip: &str, port: u16) -> Result<(), ADBError> {
-        let output = self.run_adb(&format!("connect {}:{}", ip, port))?;
-        if !output.contains("connected") {
-            return Err(ADBError::WirelessConnection(output));
+        const MAX_RETRIES: u32 = 3;
+        const RETRY_DELAY_MS: u64 = 1000;
+
+        for attempt in 1..=MAX_RETRIES {
+            let output = self.run_adb(&format!("connect {}:{}", ip, port))?;
+            if output.contains("connected") {
+                return Ok(());
+            }
+            if attempt < MAX_RETRIES {
+                std::thread::sleep(std::time::Duration::from_millis(RETRY_DELAY_MS));
+            }
         }
-        Ok(())
+        Err(ADBError::ConnectionRetry(format!("Failed to connect to {}:{} after {} attempts", ip, port, MAX_RETRIES)))
     }
 
     pub async fn connect_wireless_async(&self, ip: &str, port: u16) -> Result<(), ADBError> {

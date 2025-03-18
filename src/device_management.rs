@@ -47,6 +47,33 @@ impl ADB {
         Ok(())
     }
 
+    pub fn start_screen_record(&self, device: &str, output_path: &str, time_limit: u32) -> Result<(), ADBError> {
+        self.run_adb(&format!("-s {} shell screenrecord --time-limit {} {}", 
+            device, time_limit, output_path))?;
+        Ok(())
+    }
+
+    pub fn input_keyevent(&self, device: &str, keycode: i32) -> Result<(), ADBError> {
+        self.run_adb(&format!("-s {} shell input keyevent {}", device, keycode))?;
+        Ok(())
+    }
+
+    pub fn input_text(&self, device: &str, text: &str) -> Result<(), ADBError> {
+        self.run_adb(&format!("-s {} shell input text {}", device, text))?;
+        Ok(())
+    }
+
+    pub fn input_tap(&self, device: &str, x: i32, y: i32) -> Result<(), ADBError> {
+        self.run_adb(&format!("-s {} shell input tap {} {}", device, x, y))?;
+        Ok(())
+    }
+
+    pub fn input_swipe(&self, device: &str, x1: i32, y1: i32, x2: i32, y2: i32, duration_ms: u32) -> Result<(), ADBError> {
+        self.run_adb(&format!("-s {} shell input swipe {} {} {} {} {}", 
+            device, x1, y1, x2, y2, duration_ms))?;
+        Ok(())
+    }
+
     pub fn clear_app_data(&self, device: &str, package_name: &str) -> Result<(), ADBError> {
         self.run_adb(&format!("-s {} shell pm clear {}", device, package_name))?;
         Ok(())

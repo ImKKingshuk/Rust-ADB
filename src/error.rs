@@ -18,6 +18,30 @@ pub enum ADBError {
     #[error("Parse error: {0}")]
     Parse(String),
 
+    #[error("Screen recording error: {0}")]
+    ScreenRecording(String),
+
+    #[error("System info error: {0}")]
+    SystemInfo(String),
+
+    #[error("Battery info error: {0}")]
+    BatteryInfo(String),
+
+    #[error("Package management error: {0}")]
+    Package(String),
+
+    #[error("File transfer error: {0}")]
+    FileTransfer(String),
+
+    #[error("Wireless connection error: {0}")]
+    WirelessConnection(String),
+
+    #[error("Device property error: {0}")]
+    DeviceProperty(String),
+
+    #[error("Connection retry error: {0}")]
+    ConnectionRetry(String),
+
     #[error("Connection error: {0}")]
     Connection(String),
 
@@ -41,6 +65,30 @@ pub enum ADBError {
 
     #[error("Wireless connection error: {0}")]
     WirelessConnection(String),
+
+    #[error("Screen capture error: {0}")]
+    ScreenCapture(String),
+
+    #[error("Shell execution error: {0}")]
+    ShellExecution(String),
+
+    #[error("Logcat error: {0}")]
+    Logcat(String),
+
+    #[error("Backup error: {0}")]
+    Backup(String),
+
+    #[error("Restore error: {0}")]
+    Restore(String),
+
+    #[error("Split APK installation error: {0}")]
+    SplitPackageInstallation(String),
+
+    #[error("Network error: {0}")]
+    Network(String),
+
+    #[error("Permission denied: {0}")]
+    PermissionDenied(String),
 }
 
 pub type Result<T> = std::result::Result<T, ADBError>;
