@@ -28,6 +28,25 @@ pub enum ADBError {
     BatteryInfo(String),
 
     #[error("Package management error: {0}")]
+    PackageManagement(String),
+
+    #[error("Debug error: {0}")]
+    Debug(String),
+
+    #[error("Input event error: {0}")]
+    InputEvent(String),
+
+    #[error("Connection timeout: {0}")]
+    ConnectionTimeout(String),
+
+    #[error("Connection retry failed: {0}")]
+    ConnectionRetry(String),
+
+    #[error("Wireless connection error: {0}")]
+    WirelessConnection(String),
+
+    #[error("File transfer error: {0}")]
+    FileTransfer(String),
     Package(String),
 
     #[error("File transfer error: {0}")]

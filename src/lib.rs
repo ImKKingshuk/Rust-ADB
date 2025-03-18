@@ -12,6 +12,11 @@ mod error;
 mod package;
 mod file_ops;
 mod wireless;
+mod debug;
+mod input;
+
+pub use crate::debug::LogcatOptions;
+pub use crate::input::{InputSource, TouchEvent};
 
 pub use crate::device::Device;
 pub use crate::error::{ADBError, Result};

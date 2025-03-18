@@ -3,14 +3,23 @@ use crate::ADB;
 
 impl ADB {
     pub fn connect_wireless(&self, ip: &str, port: u16) -> Result<(), ADBError> {
-        const MAX_RETRIES: u32 = 3;
-        const RETRY_DELAY_MS: u64 = 1000;
+        const MAX_RETRIES: u32 = 5;
+        const RETRY_DELAY_MS: u64 = 2000;
+        const CONNECTION_TIMEOUT_MS: u64 = 10000;
 
+        let start_time = std::time::Instant::now();
         for attempt in 1..=MAX_RETRIES {
             let output = self.run_adb(&format!("connect {}:{}", ip, port))?;
             if output.contains("connected") {
+                info!("Successfully connected to device {}:{} on attempt {}", ip, port, attempt);
                 return Ok(());
             }
+
+            if start_time.elapsed().as_millis() as u64 > CONNECTION_TIMEOUT_MS {
+                return Err(ADBError::ConnectionTimeout(format!("Connection timeout after {}ms", CONNECTION_TIMEOUT_MS)));
+            }
+
+            warn!("Connection attempt {} failed, retrying...", attempt);
             if attempt < MAX_RETRIES {
                 std::thread::sleep(std::time::Duration::from_millis(RETRY_DELAY_MS));
             }
@@ -55,6 +64,9 @@ impl ADB {
             return Err(ADBError::WirelessConnection(output));
         }
 
+        // Wait for device to restart in TCP mode
+        std::thread::sleep(std::time::Duration::from_secs(2));
+
         // Get device IP address (try multiple network interfaces)
         let interfaces = ["wlan0", "eth0", "wifi0"];
         let mut ip = None;
@@ -63,16 +75,24 @@ impl ADB {
             let ip_output = self.shell_command(device, &format!("ip addr show {}", interface));
             if let Ok(output) = ip_output {
                 if let Some(addr) = output.lines()
-                    .find(|line| line.contains("inet "))
+                    .find(|line| line.contains("inet ") && !line.contains("127.0.0.1"))
                     .and_then(|line| line.split_whitespace().nth(1))
                     .and_then(|addr| addr.split('/').next()) {
                     ip = Some(addr.to_string());
+                    info!("Found device IP address {} on interface {}", addr, interface);
                     break;
                 }
             }
         }
 
         let ip = ip.ok_or_else(|| ADBError::WirelessConnection("Failed to get device IP".to_string()))?;
+
+        // Verify TCP/IP mode is active
+        let status = self.shell_command(device, "getprop service.adb.tcp.port")?;
+        if !status.trim().contains("5555") {
+            return Err(ADBError::WirelessConnection("TCP/IP mode not active".to_string()));
+        }
+
         Ok((ip, 5555))
     }
 
