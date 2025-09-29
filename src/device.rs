@@ -1,4 +1,3 @@
-use std::io;
 use serde::{Deserialize, Serialize};
 use crate::error::ADBError;
 use crate::ADB;

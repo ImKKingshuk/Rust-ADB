@@ -1,10 +1,17 @@
 use std::io;
 use thiserror::Error;
+use serde_json;
 
 #[derive(Error, Debug)]
 pub enum ADBError {
     #[error("IO error: {0}")]
     IO(#[from] io::Error),
+
+    #[error("System time error: {0}")]
+    SystemTime(#[from] std::time::SystemTimeError),
+
+    #[error("JSON parsing error: {0}")]
+    Json(#[from] serde_json::Error),
 
     #[error("Device not found: {0}")]
     DeviceNotFound(String),
@@ -47,19 +54,9 @@ pub enum ADBError {
 
     #[error("File transfer error: {0}")]
     FileTransfer(String),
-    Package(String),
-
-    #[error("File transfer error: {0}")]
-    FileTransfer(String),
-
-    #[error("Wireless connection error: {0}")]
-    WirelessConnection(String),
 
     #[error("Device property error: {0}")]
     DeviceProperty(String),
-
-    #[error("Connection retry error: {0}")]
-    ConnectionRetry(String),
 
     #[error("Connection error: {0}")]
     Connection(String),
@@ -73,17 +70,11 @@ pub enum ADBError {
     #[error("Package uninstallation error: {0}")]
     PackageUninstallation(String),
 
-    #[error("File transfer error: {0}")]
-    FileTransfer(String),
-
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
 
     #[error("Device state error: {0}")]
     DeviceState(String),
-
-    #[error("Wireless connection error: {0}")]
-    WirelessConnection(String),
 
     #[error("Screen capture error: {0}")]
     ScreenCapture(String),

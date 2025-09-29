@@ -1,8 +1,3 @@
-
-
-use rust_adb::ADB;
-use std::time::Duration;
-
 use rust_adb::ADB;
 use std::time::Duration;
 use log::LevelFilter;
@@ -23,9 +18,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // List connected devices
     let devices = adb.refresh_device_list()?;
     println!("Connected devices:");
-    for device in devices {
+    for device in &devices {
         println!("Serial: {}, State: {}", device.serial, device.state);
-        if let Some(model) = device.model {
+        if let Some(model) = &device.model {
             println!("Model: {}", model);
         }
     }
